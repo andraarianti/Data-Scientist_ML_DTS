@@ -1,0 +1,91 @@
+---
+title: "Data Scientist_ML_DTS"
+author: "Andra"
+date: '2022-07-04'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(caret)
+library(rpart)
+```
+
+Analisa terhadap data hasil observasi dari beberapa pohon cherry.
+
+```{r}
+##Analisa Pohon
+trees_df <- read_csv("https://storage.googleapis.com/dqlab-dataset/trees.csv")
+trees_df
+```
+```{r}
+names(trees_df)
+str(trees_df)
+names(trees_df)[1] <- "Diameter"
+trees_df$diameter_ft <- trees_df$Diameter*0.08333
+head(trees_df)
+summary(trees_df)
+```
+
+```{r}
+##Shapiro Test
+shapiro.test(trees_df$diameter_ft)
+shapiro.test(trees_df$Height)
+shapiro.test(trees_df$Volume)
+```
+```{r}
+#Visualisasi distribusi Volume
+plot(density(trees_df$Volume))
+```
+
+```{r}
+##Mencari hubungan 
+lm(formula = Volume ~ Height + diameter_ft, data = trees_df)
+plot(trees_df$diameter_ft, trees_df$Volume)
+plot(trees_df$Height,trees_df$Volume)
+```
+Penggunaan Machine Learning dalam analisis data terkait biaya listrik rumah tangga
+
+```{r}
+#read dataset
+electric_bill <- read.csv("https://storage.googleapis.com/dqlab-dataset/electric_bill.csv")
+```
+
+```{r}
+model <- lm(amount_paid ~ num_people+housearea, data = electric_bill)
+model
+```
+
+Analisa Data dengan Decision Tree
+```{r}
+iris <- read.csv("https://storage.googleapis.com/dqlab-dataset/iris.csv")
+```
+
+```{r}
+#memecah dara train dan test
+trainIndex <- createDataPartition(iris$Species, p=0.8, list=FALSE)
+training_set <- iris[trainIndex, ]
+testing_set <- iris[-trainIndex, ]
+
+dim(training_set)
+dim(testing_set)
+```
+
+```{r}
+#membuat model decison tree
+set.seed(123)
+model_dt <- rpart(Species ~., data = training_set, method = "class")
+prediction_dt <- predict(model_dt, newdata = testing_set, type = "class")
+```
+
+```{r}
+#evaluasi model dengan data test baru
+testing_species = factor(testing_set$Species)
+#memperlihatkan hasil evaluasi 
+eval_result <- confusionMatrix(prediction_dt, testing_species)
+eval_result
+```
